@@ -77,6 +77,7 @@ state_mode3 currentState_C3 = Violet;
 unsigned long previousMillis = 0;
 
 unsigned long t = 10;
+int r = 255, g = 255, b = 255;
 
 void updateTimer( unsigned long interval){
   if (millis() - previousMillis >= interval) {
@@ -87,10 +88,10 @@ void updateTimer( unsigned long interval){
   }
 }
 
-void updateLed(){
+void updateLed(int r, int g, int b){
   for (int i = 0; i < MAXIMUM_NUM_NEOPIXELS; i++) {
     if(i < t/2)
-      strip.setPixelColor(i, strip.Color(255, 0, 0));
+      strip.setPixelColor(i, strip.Color(r, g, b));
     else
       strip.setPixelColor(i, 0);
   }
@@ -127,22 +128,22 @@ void LedBlink(int pin, unsigned long interval){
   }
 }
 
-void LedTime(int pin, unsigned long interval){
+void LedTime(int pin, unsigned long interval, int r, int g, int b){
   if(timer > interval){
     strip.setPixelColor(pin, 0);
     strip.show();
     timer = 0;
   }
   else if(timer > 500){
-    strip.setPixelColor(pin, strip.Color(200, 0, 0));
+    strip.setPixelColor(pin, strip.Color(r, g, b));
     strip.show();
   }
 }
 
-void HalfBlink(int pin, unsigned long interval){
+void HalfBlink(int pin, unsigned long interval, int r, int g, int b){
   if(timer2 < interval/2){
     //Serial.println("fmdkfm");
-    strip.setPixelColor(4, strip.Color(255, 0, 0));
+    strip.setPixelColor(4, strip.Color(r, g, b));
     strip.show();
   }
   if(timer2 > interval/2 && timer2 <= interval){
@@ -150,7 +151,7 @@ void HalfBlink(int pin, unsigned long interval){
       timer3 = 0;
       //Serial.println("ioijiofh");
       if (ledState2) 
-        strip.setPixelColor(pin, strip.Color(255, 0, 0));
+        strip.setPixelColor(pin, strip.Color(r, g, b));
       else 
         strip.setPixelColor(pin, 0);
 
@@ -242,7 +243,7 @@ void INICIO()
         currentState = Inicio;
       }                              //////////////////////////////////////////alterei
       updateTimer(2000);
-      updateLed();
+      updateLed(r, g, b);
 
       Serial.println(t);
 
@@ -274,7 +275,7 @@ void INICIO()
 
     case Pause:
       Serial.println("Pause");
-      updateLed(); 
+      updateLed(r, g, b); 
 
       if(Sup.rose() && t <= 8)
         t += 2;
@@ -382,7 +383,7 @@ void MODE1()
       case time_1:
         Serial.println("time_1");
         t = 5*1;
-        LedTime(4, 1000);
+        LedTime(4, 1000, r, g, b);
 
         if(Sdown.rose()){
           strip.setPixelColor(4, 0);
@@ -393,7 +394,7 @@ void MODE1()
       case time_2:
         Serial.println("time_2");
         t=5*2;
-        LedTime(4, 2000);
+        LedTime(4, 2000, r, g, b);
 
         if(Sdown.rose()){
           strip.setPixelColor(4, 0);
@@ -404,7 +405,7 @@ void MODE1()
       case time_5:
         Serial.println("time_5");
         t=5*5;
-        LedTime(4, 5000);
+        LedTime(4, 5000, r, g, b);
 
         if(Sdown.rose()){
           strip.setPixelColor(4, 0);
@@ -415,7 +416,7 @@ void MODE1()
       case time_10:
         Serial.println("time_10");
         t=5*10;
-        LedTime(4, 10000);
+        LedTime(4, 10000, r, g, b);
 
         if(Sdown.rose()){
           strip.setPixelColor(4, 0);
@@ -432,7 +433,7 @@ void MODE2()
     switch (currentState_C2){
 
       case Switch_off:
-        LedTime(4, 2000);
+        LedTime(4, 2000, r, g, b);
         Serial.println("Switch_off");
         if(Sdown.rose()){
           strip.setPixelColor(4, 0);
@@ -441,7 +442,7 @@ void MODE2()
       break;
 
       case Blink_half:
-        HalfBlink(4, 4000);
+        HalfBlink(4, 4000, r, g, b);
         Serial.println("Blink_half");
         if(Sdown.rose()){
           strip.setPixelColor(4, 0);  
@@ -470,7 +471,10 @@ void MODE3()
     switch (currentState_C3){
       case Violet:
         Serial.println("Violet");
-        strip.setPixelColor(4, strip.Color(148, 0, 211));
+        strip.setPixelColor(4, strip.Color(179, 0, 255));
+        r=179;
+        g=0;
+        b=255;
         strip.show();
 
         if(Sdown.rose()){
@@ -481,7 +485,10 @@ void MODE3()
 
       case Blue:
         Serial.println("Blue");
-        strip.setPixelColor(4, strip.Color(0, 0, 250));
+        strip.setPixelColor(4, strip.Color(0, 0, 255));
+        r=0;
+        g=0;
+        b=255;
         strip.show();
 
         if(Sdown.rose()){
@@ -492,7 +499,10 @@ void MODE3()
 
       case Cyan:
         Serial.println("Cyan");
-        strip.setPixelColor(4, strip.Color(0, 250, 250));
+        strip.setPixelColor(4, strip.Color(0, 255, 255));
+        r=0;
+        g=255;
+        b=255;
         strip.show();
 
         if(Sdown.rose()){
@@ -503,7 +513,10 @@ void MODE3()
 
       case Green:
         Serial.println("Green");
-        strip.setPixelColor(4, strip.Color( 0, 250, 0));
+        strip.setPixelColor(4, strip.Color( 0, 255, 0));
+        r=0;
+        g=255;
+        b=0;
         strip.show();
 
         if(Sdown.rose()){
@@ -514,7 +527,10 @@ void MODE3()
 
       case Yellow:
         Serial.println("Yellow");
-        strip.setPixelColor(4, strip.Color( 255, 165, 0));
+        strip.setPixelColor(4, strip.Color(255, 165, 0));
+        r=255;
+        g=165;
+        b=0;
         strip.show();
 
         if(Sdown.rose()){
@@ -526,6 +542,9 @@ void MODE3()
       case Orange:
         Serial.println("Orange");
         strip.setPixelColor(4, strip.Color(255, 50, 0));
+        r=255;
+        g=50;
+        b=0;
         strip.show();
 
         if(Sdown.rose()){
@@ -536,7 +555,10 @@ void MODE3()
 
       case White:
         Serial.println("White");
-        strip.setPixelColor(4, strip.Color( 250, 250, 250));
+        strip.setPixelColor(4, strip.Color( 255, 255, 255));
+        r=255;
+        g=255;
+        b=255;
         strip.show();
 
         if(Sdown.rose()){
