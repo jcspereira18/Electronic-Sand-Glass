@@ -78,6 +78,8 @@ state_mode3 currentState_C3 = Violet;
 unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
 unsigned long pausedMillis = 0;
+unsigned long pausedMillis2 = 0;
+unsigned long pausedMillis3 = 0;
 unsigned long pausedMillis4 = 0;
 
 unsigned long t_interval = 2000;
@@ -183,7 +185,7 @@ void fade(int pin, unsigned long duration, int r, int g, int b){
   strip.show();
   
   // Check if the fade is complete
-  // Olá Joana
+
   if (timer4 > duration) {
     //strip.setPixelColor(pin, 0); // Turn off the LED
     //strip.show();
@@ -308,6 +310,8 @@ void INICIO()
       
       if(Sdown.rose()){
         pausedMillis = millis();
+        pausedMillis2 = timer2;
+        pausedMillis3 = timer3;
         pausedMillis4 = timer4;
         currentState = Pause;
       }
@@ -344,6 +348,8 @@ void INICIO()
 
       if(Sdown.rose()){
         previousMillis += (millis() - pausedMillis);
+        timer2 = pausedMillis2;
+        timer3 = pausedMillis3;
         timer4 = pausedMillis4;
         currentState = Led_count;
       }
