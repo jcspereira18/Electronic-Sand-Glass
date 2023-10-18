@@ -5,9 +5,9 @@
 
 #define MAXIMUM_NUM_NEOPIXELS 5
 
-#define LED_PIN 22
+#define LED_PIN 6
 
-Adafruit_NeoPixel strip(MAXIMUM_NUM_NEOPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(MAXIMUM_NUM_NEOPIXELS, LED_PIN, NEO_RGB + NEO_KHZ800);
 
 #define SGO 2 //button 1
 #define SUP 3 //button 4
@@ -75,7 +75,6 @@ state_mode1 currentState_C1 = time_1;
 state_mode2 currentState_C2 = Switch_off;
 state_mode3 currentState_C3 = Violet;
 
-unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
 unsigned long pausedMillis = 0;
 unsigned long pausedMillis2 = 0;
@@ -86,14 +85,15 @@ unsigned long t_interval = 2000;
 unsigned long fast_blink = 125;
 unsigned long t_count = 10;
 unsigned long t_max = 10;
-int r = 100, g = 100, b = 100;
+
+int r = 255, g = 255, b = 255;
 bool blink = false;
 int effect_count = 0;  //flag para saber qual o efeito a ser executado
+int currentBrightness = 0; // Current brightness of the LED
 
 void updateTimer( unsigned long interval){
   Serial.println("uptime");
-  currentMillis = millis();
-  if (currentMillis - previousMillis >= interval ) {
+  if (millis() - previousMillis >= interval ) {
     previousMillis = millis();
     if(t_count > 0){
       t_count -= interval/1000;
@@ -103,8 +103,15 @@ void updateTimer( unsigned long interval){
 
 void updateLed(int r, int g, int b){
   for (unsigned long i = 0; i < MAXIMUM_NUM_NEOPIXELS; i++) {
-    if(i < t_count/(t_interval/1000))
-      strip.setPixelColor(i, strip.Color(r, g, b));
+    if(i < t_count/(t_interval/1000)){
+      if(effect_count == 0 || effect_count == 1)
+        strip.setPixelColor(i, strip.Color(r, g, b));
+
+      if(effect_count == 2 && i == t_count/(t_interval/1000)-1)
+        strip.setPixelColor(i, strip.Color(r*currentBrightness/255, g*currentBrightness/255, b*currentBrightness/255));
+      else
+        strip.setPixelColor(i, strip.Color(r, g, b));
+    }
     else
       strip.setPixelColor(i, 0);
   }
@@ -178,7 +185,7 @@ void HalfBlink(int pin, int r, int g, int b, unsigned long t_interval, unsigned 
 void fade(int pin, unsigned long duration, int r, int g, int b){  
 
   // Calculate the new brightness based on the elapsed time
-  int currentBrightness = map(timer4, 0, duration, 255, 0);
+  currentBrightness = map(timer4, 0, duration, 255, 0);
   
   // Set the LED color with the current brightness
   strip.setPixelColor(pin, strip.Color(r*currentBrightness/255, g*currentBrightness/255, b*currentBrightness/255));
