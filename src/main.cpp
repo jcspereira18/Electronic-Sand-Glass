@@ -22,7 +22,6 @@ elapsedMillis timer_blink;
 elapsedMillis timer2;
 elapsedMillis timer3;
 elapsedMillis timer4;
-elapsedMillis timer5;
 
 
 #define blink_interval 1000
@@ -76,7 +75,9 @@ state_mode1 currentState_C1 = time_1;
 state_mode2 currentState_C2 = Switch_off;
 state_mode3 currentState_C3 = Violet;
 
+unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
+unsigned long pausedMillis = 0;
 
 unsigned long t_interval = 2000;
 unsigned long fast_blink = 125;
@@ -87,7 +88,9 @@ bool blink = false;
 int effect_count = 0;  //flag para saber qual o efeito a ser executado
 
 void updateTimer( unsigned long interval){
-  if (millis() - previousMillis >= interval) {
+  Serial.println("uptime");
+  currentMillis = millis();
+  if (currentMillis - previousMillis >= interval ) {
     previousMillis = millis();
     if(t_count > 0){
       t_count -= interval/1000;
@@ -170,7 +173,7 @@ void HalfBlink(int pin, int r, int g, int b, unsigned long t_interval, unsigned 
 }
 
 void fade(int pin, unsigned long duration, int r, int g, int b){  
- 
+
   // Calculate the new brightness based on the elapsed time
   int currentBrightness = map(timer4, 0, duration, 255, 0);
   
@@ -224,7 +227,7 @@ void INICIO()
 
       if(Sgo.rose() && blink == false){
         t_count=MAXIMUM_NUM_NEOPIXELS*t_interval/1000;
-        t_max=t_count;
+        t_max = t_count;
         ledState2 = HIGH;
         previousMillis = millis(); //restart timer
         timer2 = 0; //restart halfblink
@@ -302,7 +305,8 @@ void INICIO()
       }
       
       if(Sdown.rose()){
-        currentState = Pause;///////////////////////////////////////////////////amimir
+        pausedMillis = millis();
+        currentState = Pause;
       }
 
       if(Sup.read() == LOW && Sup.currentDuration() >= 3000){
@@ -323,10 +327,11 @@ void INICIO()
 
     case Pause:
       Serial.println("Pause");
-      updateLed(r, g, b); 
+      updateLed(r, g, b);
 
-      if(Sup.rose() && (t_count <= t_max - t_interval/1000))
+      if(Sup.rose() && (t_count <= t_max - t_interval/1000)){
         t_count += t_interval/1000;
+      }
 
       if(Sup.read() == LOW && Sup.currentDuration() >= 3000){
         strip.clear();
@@ -335,6 +340,7 @@ void INICIO()
       }
 
       if(Sdown.rose()){
+        previousMillis += (millis() - pausedMillis);
         currentState = Led_count;
       }
 
