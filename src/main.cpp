@@ -334,10 +334,10 @@ void INICIO()
 
     case Pause:
       Serial.println("Pause");
-     // updateLed(r, g, b);
 
       if(Sup.rose() && (t_count <= t_max - t_interval/1000)){
         t_count += t_interval/1000;
+        updateLed(r, g, b);
       }
 
       if(Sup.read() == LOW && Sup.currentDuration() >= 3000){
