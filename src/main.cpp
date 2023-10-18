@@ -183,6 +183,7 @@ void fade(int pin, unsigned long duration, int r, int g, int b){
   strip.show();
   
   // Check if the fade is complete
+  // Olá Joana
   if (timer4 > duration) {
     //strip.setPixelColor(pin, 0); // Turn off the LED
     //strip.show();
