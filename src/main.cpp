@@ -78,6 +78,7 @@ state_mode3 currentState_C3 = Violet;
 unsigned long currentMillis = 0;
 unsigned long previousMillis = 0;
 unsigned long pausedMillis = 0;
+unsigned long pausedMillis4 = 0;
 
 unsigned long t_interval = 2000;
 unsigned long fast_blink = 125;
@@ -306,6 +307,7 @@ void INICIO()
       
       if(Sdown.rose()){
         pausedMillis = millis();
+        pausedMillis4 = timer4;
         currentState = Pause;
       }
 
@@ -327,7 +329,7 @@ void INICIO()
 
     case Pause:
       Serial.println("Pause");
-      updateLed(r, g, b);
+     // updateLed(r, g, b);
 
       if(Sup.rose() && (t_count <= t_max - t_interval/1000)){
         t_count += t_interval/1000;
@@ -341,6 +343,7 @@ void INICIO()
 
       if(Sdown.rose()){
         previousMillis += (millis() - pausedMillis);
+        timer4 = pausedMillis4;
         currentState = Led_count;
       }
 
