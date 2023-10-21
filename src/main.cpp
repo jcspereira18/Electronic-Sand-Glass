@@ -22,6 +22,8 @@ elapsedMillis timer_blink;
 elapsedMillis timer2;
 elapsedMillis timer3;
 elapsedMillis timer4;
+elapsedMillis timer_rainbow;
+elapsedMillis timer_idle;
 
 
 #define blink_interval 1000
@@ -32,6 +34,7 @@ int ledState2 = HIGH;
 typedef enum{
   Entry_Configuration,
   Inicio,
+  Idle,
   Led_count,
   Pause,
   Configuration,
@@ -120,6 +123,24 @@ void updateLed(int r, int g, int b){
   strip.show();
 }
 
+void rainbow(unsigned long wait){
+  //unsigned long previousMillis = 0;
+  static long firstPixelHue = 0;
+
+  //if(millis() - previousMillis >= wait) {
+    //previousMillis = millis();
+  if(timer_rainbow > wait){
+    strip.rainbow(firstPixelHue);
+    strip.show();
+
+    firstPixelHue += 256 / strip.numPixels();
+    if(firstPixelHue >= 5*65536) { 
+      firstPixelHue = 0;
+    }
+    timer_rainbow = 0;
+  }
+}
+
 void Time_up(){
   if (timer_blink > 100) {
     timer_blink = 0;
@@ -136,7 +157,7 @@ void Time_up(){
 }
 
 void LedBlink(int pin, unsigned long interval){
-  if (timer_blink > interval) {
+  if (timer_blink > interval){
     timer_blink = 0;
 
     if (ledState) 
@@ -195,7 +216,6 @@ void fade(int pin, unsigned long duration, int r, int g, int b){
   strip.show();
   
   // Check if the fade is complete
-
   if (timer4 > duration) {
     timer4 = 0; //restart fade
   }
@@ -222,8 +242,7 @@ void setup(){
   strip.show(); 
 }
 
-void INICIO()
-{
+void INICIO(){
   switch (currentState){
     case Inicio:
       Serial.println("Inicio");
@@ -244,18 +263,37 @@ void INICIO()
         previousMillis = millis(); //restart timer
         timer2 = 0; //restart halfblink
         timer4 = 0; //restart fade
+        timer_idle = 0; //restart idle
         currentState = Led_count;
       }
 
       if(Sgo.rose() && blink == true){
         blink = false;
-        currentState = Inicio;
+        timer_idle = 0;
       }
 
       if(Sup.read() == LOW && Sup.currentDuration() >= 3000){
         currentState = Entry_Configuration;
         strip.clear();
         strip.show();
+      }
+
+      if(timer_idle > 5000){
+      //if(Sdown.rose())
+        blink = false;
+        timer_rainbow = 0;
+        currentState = Idle; 
+      }  
+
+    break;
+
+    case Idle:
+
+      rainbow(0.5);
+
+      if(Sgo.rose()){
+        timer_idle = 0;
+        currentState = Inicio;
       }
 
     break;
@@ -265,6 +303,7 @@ void INICIO()
       if(Sgo.rose()){
         t_count=MAXIMUM_NUM_NEOPIXELS*t_interval/1000;
         blink = false;
+        timer_idle = 0;
         currentState = Inicio;
       }
       
@@ -336,6 +375,7 @@ void INICIO()
         strip.clear();
         strip.show();
         blink = true;
+        timer_idle = 0;
         currentState = Inicio;
       }
     break;
@@ -398,6 +438,7 @@ void INICIO()
         strip.clear();
         strip.show();
         blink = false;
+        timer_idle = 0;
         currentState = Inicio;
       }                                   /////////////////////////////adicionei
     break;
@@ -421,6 +462,7 @@ void INICIO()
         strip.show();
         blink = false;
         if(Sup.rose()){
+          timer_idle = 0;
           currentState = Inicio;
         }
     break;
@@ -428,8 +470,7 @@ void INICIO()
   
 }
 
-void CONFI_MODE()
-{
+void CONFI_MODE(){
     switch (currentState_C){
       case Wait:
         if(currentState == Configuration)
@@ -476,8 +517,7 @@ void CONFI_MODE()
     }
 }
 
-void MODE1()
-{
+void MODE1(){
   if(currentState_C == Timer_time){
     switch (currentState_C1){
       case time_1:
@@ -531,8 +571,7 @@ void MODE1()
   }
 }
 
-void MODE2()
-{
+void MODE2(){
   if(currentState_C == Counting_effect){
     switch (currentState_C2){
 
@@ -571,8 +610,7 @@ void MODE2()
   }
 }
 
-void MODE3()
-{
+void MODE3(){
   if(currentState_C == Countin_Color){
     switch (currentState_C3){
       case Violet:
@@ -648,12 +686,11 @@ void MODE3()
   }
 }
 
-void loop() 
-{
+void loop(){
+  
   Sgo.update();
   Sup.update();
   Sdown.update();
-
  
   INICIO();
 
