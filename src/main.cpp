@@ -5,9 +5,9 @@
 
 #define MAXIMUM_NUM_NEOPIXELS 5
 
-#define LED_PIN 6
+#define LED_PIN 22
 
-Adafruit_NeoPixel strip(MAXIMUM_NUM_NEOPIXELS, LED_PIN, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel strip(MAXIMUM_NUM_NEOPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 #define SGO 2 //button 1
 #define SUP 3 //button 4
@@ -22,8 +22,10 @@ elapsedMillis timer_blink;
 elapsedMillis timer2;
 elapsedMillis timer3;
 elapsedMillis timer4;
+elapsedMillis timer5;
 elapsedMillis timer_rainbow;
 elapsedMillis timer_idle;
+elapsedMillis timeElapsed;
 
 
 #define blink_interval 1000
@@ -94,6 +96,8 @@ bool blink = false;
 int effect_count = 0;  //flag para saber qual o efeito a ser executado
 int currentBrightness = 0; // Current brightness of the LED
 bool pause_blinking = false; //flag para saber se o led estava a piscar ou não antes de pausar
+int ballPos = 0; // Initial position of the ball
+int ballSpeed = 1; // Speed of the ball
 
 void updateTimer( unsigned long interval){
   Serial.println("uptime");
@@ -153,15 +157,28 @@ void Time_up(){
     strip.show();
     ledState = !ledState;
   }
-
 }
 
-void LedBlink(int pin, unsigned long interval){
+void Pause_Blink(unsigned long interval, int r, int g, int b){
+  if (timer_blink > interval) {
+    timer_blink = 0;
+
+    if (ledState) 
+      strip.fill(strip.Color(r, g, b), 0, t_count/(t_interval/1000));
+    else 
+      strip.clear();
+
+    strip.show();
+    ledState = !ledState;
+  }
+}
+
+void LedBlink(int pin, unsigned long interval, int r, int g, int b){
   if (timer_blink > interval){
     timer_blink = 0;
 
     if (ledState) 
-      strip.setPixelColor(pin, strip.Color(20, 20, 20));
+      strip.setPixelColor(pin, strip.Color(r, g, b));
     else 
       strip.setPixelColor(pin, 0);
 
@@ -228,6 +245,33 @@ void LedColor(int pin, int red, int green, int blue) {
     b = blue;
     strip.show();
 }
+ 
+void Bouncing_Ball(){
+
+  const unsigned long updateInterval = 150; // Update interval in milliseconds
+
+  if (timeElapsed >= updateInterval) {
+    // Clear the previous position of the ball
+    strip.setPixelColor(ballPos, 0);
+    
+    // Update the position of the ball
+    ballPos += ballSpeed;
+    
+    // If the ball reaches the end, reverse its direction
+    if (ballPos == 0 || ballPos == MAXIMUM_NUM_NEOPIXELS - 1) {
+      ballSpeed *= -1;
+    }
+
+    //set the new position with a random color
+    strip.setPixelColor(ballPos, strip.Color(random(0, 255), random(0, 255), random(0, 255)));
+    
+    // Display the updated LEDs
+    strip.show();
+    
+    // Reset the timer
+    timeElapsed = 0;
+  }
+}
 
 void setup(){
 
@@ -278,10 +322,11 @@ void INICIO(){
         strip.show();
       }
 
-      if(timer_idle > 5000){
-      //if(Sdown.rose())
+      if(timer_idle > 30000){
         blink = false;
         timer_rainbow = 0;
+        timeElapsed = 0;
+        timer5 = 0;
         currentState = Idle; 
       }  
 
@@ -289,7 +334,15 @@ void INICIO(){
 
     case Idle:
 
-      rainbow(0.5);
+      if(timer5 < 5000){
+        rainbow(0.5);
+      }
+      if(timer5 > 5000){
+        Bouncing_Ball();  
+      }
+      if(timer5 > 10000){
+        timer5 = 0;
+      }
 
       if(Sgo.rose()){
         timer_idle = 0;
@@ -300,6 +353,7 @@ void INICIO(){
 
     case Led_count:
       Serial.println("Led_count");
+
       if(Sgo.rose()){
         t_count=MAXIMUM_NUM_NEOPIXELS*t_interval/1000;
         blink = false;
@@ -360,6 +414,7 @@ void INICIO(){
         pausedMillis2 = timer2;
         pausedMillis3 = timer3;
         pausedMillis4 = timer4;
+        ledState = HIGH;
         currentState = Pause;
       }
 
@@ -383,7 +438,9 @@ void INICIO(){
     case Pause:
       Serial.println("Pause");
 
-      if(effect_count == 1){
+        Pause_Blink(500, r, g, b); //faz piscar no pause
+
+      /*if(effect_count == 1){                                         //faz piscar no pause do half blink
         for(unsigned long i = 0; i < MAXIMUM_NUM_NEOPIXELS; i++) {
           if(i < t_count/(t_interval/1000)-1){
             strip.setPixelColor(i, strip.Color(r, g, b));
@@ -412,7 +469,7 @@ void INICIO(){
             }  
           }
         }
-      }
+      }*/                                                             //faz piscar no pause do half blink
 
       if(Sup.rose() && (t_count <= t_max - t_interval/1000)){
         t_count += t_interval/1000;
@@ -433,19 +490,19 @@ void INICIO(){
         currentState = Led_count;
       }
 
-      if(Sgo.rose()){      //////////////////////////////////////////adicionei
+      if(Sgo.rose()){
         t_count=MAXIMUM_NUM_NEOPIXELS*t_interval/1000;
         strip.clear();
         strip.show();
         blink = false;
         timer_idle = 0;
         currentState = Inicio;
-      }                                   /////////////////////////////adicionei
+      }
     break;
 
     case Entry_Configuration:
       Serial.println("Entry_Configuration");
-      LedBlink(0, 500);
+      LedBlink(0, 500, 20, 20, 20);
       if(Sup.rose()){
         currentState = Configuration;
       }
@@ -478,7 +535,7 @@ void CONFI_MODE(){
       break;
 
       case Timer_time:
-        LedBlink(0, 500); //Led 1 blink
+        LedBlink(0, 500, 20, 20, 20); //Led 1 blink
 
         if(Sup.rose()){
           strip.setPixelColor(0, 0);
@@ -490,7 +547,7 @@ void CONFI_MODE(){
       break;
 
       case Counting_effect:
-        LedBlink(1, 500); //LED 2 blink
+        LedBlink(1, 500, 20, 20, 20); //LED 2 blink
 
         if(Sup.rose()){
           strip.setPixelColor(1, 0);
@@ -503,7 +560,7 @@ void CONFI_MODE(){
       break;
 
       case Countin_Color:
-        LedBlink(2, 500); //Led 3 blink
+        LedBlink(2, 500, 20, 20, 20); //Led 3 blink
 
         if(Sup.rose()){
           strip.setPixelColor(2, 0);
