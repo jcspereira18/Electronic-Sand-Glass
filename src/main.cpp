@@ -35,7 +35,7 @@ int ledState2 = HIGH;
 
 typedef enum{
   Entry_Configuration,
-  Inicio,
+  Start,
   Idle,
   Led_count,
   Pause,
@@ -74,7 +74,7 @@ typedef enum{
 }state_mode3;
 
 //Estado atual da maquina
-state_t currentState = Inicio;
+state_t currentState = Start;
 state_confi currentState_C = Wait;
 state_mode1 currentState_C1 = time_1;
 state_mode2 currentState_C2 = Switch_off;
@@ -288,7 +288,7 @@ void setup(){
 
 void INICIO(){
   switch (currentState){
-    case Inicio:
+    case Start:
       Serial.println("Inicio");
 
       if(blink == true)
@@ -301,7 +301,7 @@ void INICIO(){
 
 
       if(Sgo.rose() && blink == false){
-        t_count=MAXIMUM_NUM_NEOPIXELS*t_interval/1000;
+        t_count = MAXIMUM_NUM_NEOPIXELS * t_interval/1000;
         t_max = t_count;
         ledState2 = HIGH;
         previousMillis = millis(); //restart timer
@@ -346,7 +346,7 @@ void INICIO(){
 
       if(Sgo.rose()){
         timer_idle = 0;
-        currentState = Inicio;
+        currentState = Start;
       }
 
     break;
@@ -355,10 +355,10 @@ void INICIO(){
       Serial.println("Led_count");
 
       if(Sgo.rose()){
-        t_count=MAXIMUM_NUM_NEOPIXELS*t_interval/1000;
+        t_count = MAXIMUM_NUM_NEOPIXELS * t_interval/1000;
         blink = false;
         timer_idle = 0;
-        currentState = Inicio;
+        currentState = Start;
       }
       
       if(effect_count == 0){
@@ -431,7 +431,7 @@ void INICIO(){
         strip.show();
         blink = true;
         timer_idle = 0;
-        currentState = Inicio;
+        currentState = Start;
       }
     break;
 
@@ -491,12 +491,12 @@ void INICIO(){
       }
 
       if(Sgo.rose()){
-        t_count=MAXIMUM_NUM_NEOPIXELS*t_interval/1000;
+        t_count = MAXIMUM_NUM_NEOPIXELS * t_interval/1000;
         strip.clear();
         strip.show();
         blink = false;
         timer_idle = 0;
-        currentState = Inicio;
+        currentState = Start;
       }
     break;
 
@@ -520,7 +520,7 @@ void INICIO(){
         blink = false;
         if(Sup.rose()){
           timer_idle = 0;
-          currentState = Inicio;
+          currentState = Start;
         }
     break;
   }
