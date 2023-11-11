@@ -95,7 +95,6 @@ int r = 255, g = 255, b = 255;
 bool blink = false;
 int effect_count = 0;  //flag para saber qual o efeito a ser executado
 int currentBrightness = 0; // Current brightness of the LED
-bool pause_blinking = false; //flag para saber se o led estava a piscar ou não antes de pausar
 int ballPos = 0; // Initial position of the ball
 int ballSpeed = 1; // Speed of the ball
 
@@ -202,12 +201,10 @@ void LedTime(int pin, unsigned long interval, int r, int g, int b){
 void HalfBlink(int pin, int r, int g, int b, unsigned long t_interval, unsigned long fast_blink){
 
   if(timer2 < t_interval/2){
-    pause_blinking = false;
     strip.setPixelColor(pin, strip.Color(r, g, b));
     strip.show();
   }
   if(timer2 > t_interval/2 && timer2 <= t_interval){
-    pause_blinking = true;
     if (timer3 > fast_blink) {
     timer3 = 0;
     if (ledState2) 
@@ -439,37 +436,6 @@ void INICIO(){
       Serial.println("Pause");
 
         Pause_Blink(500, r, g, b); //faz piscar no pause
-
-      /*if(effect_count == 1){                                         //faz piscar no pause do half blink
-        for(unsigned long i = 0; i < MAXIMUM_NUM_NEOPIXELS; i++) {
-          if(i < t_count/(t_interval/1000)-1){
-            strip.setPixelColor(i, strip.Color(r, g, b));
-            strip.show();
-          }    
-          else{
-            if(i > t_count/(t_interval/1000)-1){
-              strip.setPixelColor(i, 0);
-              strip.show();
-            }
-            else if(pause_blinking == true){
-              if(timer2 > t_interval/2 && timer2 <= t_interval){
-                if (timer3 > fast_blink) {
-                timer3 = 0;
-                if (ledState2) 
-                  strip.setPixelColor(i, strip.Color(r, g, b));
-                else 
-                  strip.setPixelColor(i, 0);
-                strip.show();
-                ledState2 = !ledState2;
-                }
-              }
-              if(timer2 > t_interval){
-                  timer2 = t_interval/2;
-              }
-            }  
-          }
-        }
-      }*/                                                             //faz piscar no pause do half blink
 
       if(Sup.rose() && (t_count <= t_max - t_interval/1000)){
         t_count += t_interval/1000;
